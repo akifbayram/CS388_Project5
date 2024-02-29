@@ -1,38 +1,66 @@
 package com.mehmet.cs388_project5
 
-import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.TextUtils
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.codepath.cs388_project5.NutritionDao
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AddActivity : AppCompatActivity() {
+
+    private lateinit var nutritionDao: NutritionDao
+    private lateinit var btnRecord: Button
+    private lateinit var nutritionEditText: EditText
+    private lateinit var caloriesEditText: EditText
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add)
+        initializeViews()
+        setupButtonListener()
+    }
 
-        val button = findViewById<Button>(R.id.buttonAddFoodRecord)
-        val foodEditText = findViewById<EditText>(R.id.editAddFood)
-        val caloriesEditText = findViewById<EditText>(R.id.editAddCalories)
+    private fun initializeViews() {
+        nutritionDao = (application as NutritionApplication).db.nutritionDao()
+        btnRecord = findViewById(R.id.buttonAddFoodRecord)
+        nutritionEditText = findViewById(R.id.editAddFood)
+        caloriesEditText = findViewById(R.id.editAddCalories)
+    }
 
-        button.setOnClickListener {
-            val replyIntent = Intent().apply {
-                if (TextUtils.isEmpty(foodEditText.text)) {
-                    setResult(Activity.RESULT_CANCELED, this)
-                } else {
-                    putExtra(FOODX, foodEditText.text.toString())
-                    putExtra(CALORIESX, caloriesEditText.text.toString())
-                    setResult(Activity.RESULT_OK, this)
-                }
-            }
-            finish()
+    private fun setupButtonListener() {
+        btnRecord.setOnClickListener {
+            validateAndInsertFood()
         }
     }
 
-    companion object {
-        const val FOODX = "FOODX"
-        const val CALORIESX = "CALORIESX"
+    private fun validateAndInsertFood() {
+        if (nutritionEditText.text.isEmpty() || caloriesEditText.text.isEmpty()) {
+            Toast.makeText(this, "Please enter values for Food and Calories", Toast.LENGTH_SHORT).show()
+        } else {
+            val food = NutritionEntity(
+                name = nutritionEditText.text.toString(),
+                calories = caloriesEditText.text.toString().toInt()
+            )
+            insertFood(food)
+        }
+    }
+
+    private fun insertFood(nutritionEntity: NutritionEntity) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            nutritionDao.insert(nutritionEntity)
+        }
+        finishActivityWithResult()
+    }
+
+    private fun finishActivityWithResult() {
+        setResult(RESULT_OK, Intent().apply {
+            putExtra("food_recorded", true)
+        })
+        finish()
     }
 }

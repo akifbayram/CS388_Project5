@@ -25,6 +25,8 @@ abstract class AppDatabase : RoomDatabase() {
             Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java, "nutrition_database"
-            ).build()
+            )
+                .fallbackToDestructiveMigration()
+                .build()
     }
 }

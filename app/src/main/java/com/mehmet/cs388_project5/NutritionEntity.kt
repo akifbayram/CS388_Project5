@@ -10,3 +10,5 @@ data class NutritionEntity(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "calories") val calories: Int,
 )
+
+

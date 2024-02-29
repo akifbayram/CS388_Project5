@@ -15,9 +15,6 @@ interface NutritionDao {
     @Insert
     fun insert(nutritionEntity: NutritionEntity)
 
-    @Query("DELETE FROM nutrition_table")
-    fun deleteAll()
-
     @Delete
     fun delete(nutrition: NutritionEntity)
 }
